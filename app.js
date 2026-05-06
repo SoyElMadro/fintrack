@@ -747,15 +747,17 @@
 
       html += `
         <div class="wallet-item" data-type="${wallet.type || 'physical'}">
-          <div class="wallet-info">
-            <div class="wallet-name-row">
+          <div class="wallet-left">
+            <div class="wallet-top-row">
               <span class="wallet-name">${wallet.name}</span>
               <span class="wallet-type-badge" ${displayType === 'plazo_fijo' ? `style="background: rgba(236, 72, 153, 0.12); color: #EC4899;"` : ''}>${badgeLabel}</span>
               ${editBtnHtml}
             </div>
-            ${equivalentHtml}
+            <div class="wallet-bottom-row">
+              ${equivalentHtml ? `<span class="wallet-equivalent">${equivalentHtml}</span>` : ''}
+            </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="wallet-right">
             <span class="wallet-balance">${displayBalance}</span>
             <div class="wallet-item-actions">
               <button class="btn-wallet-action" onclick="window.app.openEditWallet('${wallet.id}')" title="Editar">
