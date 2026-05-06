@@ -1,0 +1,28 @@
+{
+  "name": "FinTrack - Gestor de Finanzas",
+  "short_name": "FinTrack",
+  "description": "Gestor de finanzas personales con seguimiento de gastos, ingresos y presupuestos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#10B981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "productivity"],
+  "lang": "es",
+  "scope": "/",
+  "prefer_related_applications": false
+}

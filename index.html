@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Gestor de finanzas personales - Controla tus ingresos, gastos y presupuestos">
+  <meta name="theme-color" content="#10B981">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="FinTrack">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>FinTrack - Gestor de Finanzas Personales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container" id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="var(--primary)"/>
+            <path d="M8 16h16M16 8v16M11 11l10 10M21 11l-10 10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h1 class="app-title">FinTrack</h1>
+      </div>
+      <div class="header-right">
+        <button class="btn-icon" id="exportBtn" title="Exportar Datos">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+        </button>
+        <button class="btn-icon" id="importBtn" title="Importar Datos">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+        </button>
+        <input type="file" id="importFile" accept=".json" hidden>
+        <button class="btn-icon" id="darkModeToggle" title="Cambiar Modo Oscuro">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sun-icon">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="moon-icon">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
+        <button class="btn-menu btn-icon" id="menuBtn" title="Abrir menú" aria-label="Abrir menú lateral">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <!-- Sidebar close button (mobile only) -->
+        <button class="btn-icon sidebar-close" id="sidebarCloseBtn" aria-label="Cerrar menú" style="position:absolute;top:16px;right:16px;display:none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+        <button class="btn-primary add-transaction-btn" id="openModalBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Agregar Transacción
+        </button>
+
+        <div class="budget-section">
+          <h3>Presupuesto Mensual</h3>
+          <div class="budget-input-group">
+            <input type="number" id="budgetInput" placeholder="Establecer límite..." min="0">
+            <button class="btn-sm" id="setBudgetBtn">Establecer</button>
+          </div>
+          <div class="budget-progress">
+            <div class="budget-bar" id="budgetBar">
+              <div class="budget-fill" id="budgetFill"></div>
+            </div>
+            <span class="budget-text" id="budgetText">$0 / $0</span>
+          </div>
+        </div>
+
+        <div class="quick-stats">
+          <div class="stat-item income">
+            <span class="stat-label">Ingresos</span>
+            <span class="stat-value" id="sidebarIncome">$0.00</span>
+          </div>
+          <div class="stat-item expense">
+            <span class="stat-label">Gastos</span>
+            <span class="stat-value" id="sidebarExpenses">$0.00</span>
+          </div>
+        </div>
+
+        <div class="wallets-section">
+          <div class="wallets-header">
+            <h3>Billeteras</h3>
+            <button class="btn-transfer" id="openTransferBtn" title="Transferir entre billeteras">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 16l-4-4 4-4M17 8l4 4-4 4M3 12h18"/>
+              </svg>
+              Transferir
+            </button>
+          </div>
+          <div class="wallets-list" id="walletsList"></div>
+          <div class="wallet-total">
+            <span>Total:</span>
+            <span id="walletsTotal">$0</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Content Area -->
+      <section class="content">
+        <!-- Dashboard -->
+        <div class="dashboard">
+          <div class="stat-card balance">
+            <div class="stat-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="M12 10v4M10 12h4"/>
+              </svg>
+            </div>
+            <div class="stat-card-content">
+              <span class="stat-card-label">Balance Total</span>
+              <span class="stat-card-value" id="totalBalance">$0.00</span>
+            </div>
+          </div>
+          <div class="stat-card income">
+            <div class="stat-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+              </svg>
+            </div>
+            <div class="stat-card-content">
+              <span class="stat-card-label">Ingresos Totales</span>
+              <span class="stat-card-value" id="totalIncome">$0.00</span>
+            </div>
+          </div>
+          <div class="stat-card expense">
+            <div class="stat-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M16 8l-8 8M8 8l8 8"/>
+              </svg>
+            </div>
+            <div class="stat-card-content">
+              <span class="stat-card-label">Gastos Totales</span>
+              <span class="stat-card-value" id="totalExpenses">$0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+          <div class="chart-card">
+            <h3>Ingresos vs Gastos (Últimos 6 Meses)</h3>
+            <div class="chart-container" id="barChart"></div>
+          </div>
+          <div class="chart-card">
+            <h3>Gastos por Categoría (Este Mes)</h3>
+            <div class="chart-container" id="pieChart"></div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+          <h3>Transacciones</h3>
+          <div class="filters">
+            <div class="filter-group">
+              <label for="filterStartDate">Desde</label>
+              <input type="date" id="filterStartDate">
+            </div>
+            <div class="filter-group">
+              <label for="filterEndDate">Hasta</label>
+              <input type="date" id="filterEndDate">
+            </div>
+            <div class="filter-group">
+              <label for="filterType">Tipo</label>
+              <select id="filterType">
+                <option value="all">Todos</option>
+                <option value="income">Ingreso</option>
+                <option value="expense">Gasto</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filterCategory">Categoría</label>
+              <select id="filterCategory">
+                <option value="all">Todas las Categorías</option>
+              </select>
+            </div>
+            <button class="btn-secondary" id="clearFiltersBtn">Limpiar</button>
+          </div>
+        </div>
+
+        <!-- Transaction List -->
+        <div class="transactions-section">
+          <div class="transaction-list" id="transactionList">
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="M12 10v4M10 12h4"/>
+              </svg>
+              <h3>No hay transacciones</h3>
+              <p>Agrega tu primera transacción para comenzar</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Transaction Modal -->
+    <div class="modal-overlay" id="transactionModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="modalTitle">Agregar Transacción</h2>
+          <button class="btn-icon modal-close" id="closeModalBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form id="transactionForm">
+          <div class="form-group">
+            <label for="amount">Monto</label>
+            <input type="number" id="amount" step="0.01" min="0.01" required placeholder="0.00">
+            <span class="error-message" id="amountError"></span>
+          </div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <div class="type-toggle">
+              <label class="type-option">
+                <input type="radio" name="type" value="expense" checked>
+                <span class="type-label expense">Gasto</span>
+              </label>
+              <label class="type-option">
+                <input type="radio" name="type" value="income">
+                <span class="type-label income">Ingreso</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="category">Categoría</label>
+            <select id="category" required>
+              <option value="">Seleccionar categoría</option>
+            </select>
+            <span class="error-message" id="categoryError"></span>
+          </div>
+          <div class="form-group">
+            <label for="wallet">Billetera</label>
+            <select id="wallet" required>
+              <option value="">Seleccionar billetera</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="description">Descripción (opcional)</label>
+            <input type="text" id="description" maxlength="100" placeholder="Ingresa descripción...">
+          </div>
+          <div class="form-group">
+            <label for="date">Fecha</label>
+            <input type="date" id="date" required>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" id="cancelBtn">Cancelar</button>
+            <button type="submit" class="btn-primary" id="saveBtn">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <h2>Eliminar Transacción</h2>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que quieres eliminar esta transacción? Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" id="cancelDeleteBtn">Cancelar</button>
+          <button class="btn-danger" id="confirmDeleteBtn">Eliminar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div class="modal-overlay" id="transferModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Transferir Fondos</h2>
+          <button class="btn-icon modal-close" id="closeTransferBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form id="transferForm">
+          <div class="form-group">
+            <label for="transferFrom">Desde</label>
+            <select id="transferFrom" required>
+              <option value="">Seleccionar origen</option>
+            </select>
+            <span class="error-message" id="transferFromError"></span>
+          </div>
+          <div class="transfer-arrow-container">
+            <div class="transfer-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M19 12l-7 7-7-7"/>
+              </svg>
+            </div>
+            <button type="button" class="btn-swap" id="swapWalletsBtn" title="Intercambiar billeteras">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 16l-4-4 4-4M17 8l4 4-4 4M3 12h18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="form-group">
+            <label for="transferTo">Hacia</label>
+            <select id="transferTo" required>
+              <option value="">Seleccionar destino</option>
+            </select>
+            <span class="error-message" id="transferToError"></span>
+          </div>
+          <div class="form-group">
+            <label for="transferAmount">Monto</label>
+            <input type="number" id="transferAmount" step="0.01" min="0.01" required placeholder="0.00">
+            <span class="transfer-available" id="transferAvailable"></span>
+            <span class="error-message" id="transferAmountError"></span>
+          </div>
+          <div class="form-group">
+            <label for="transferDescription">Descripción (opcional)</label>
+            <input type="text" id="transferDescription" maxlength="100" placeholder="Ej: Paso a efectivo">
+          </div>
+          <div class="form-group">
+            <label for="transferDate">Fecha</label>
+            <input type="date" id="transferDate" required>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" id="cancelTransferBtn">Cancelar</button>
+            <button type="submit" class="btn-primary btn-transfer-submit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 16l-4-4 4-4M17 8l4 4-4 4M3 12h18"/>
+              </svg>
+              Transferir
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Update Broker Modal -->
+    <div class="modal-overlay" id="updateBrokerModal">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <h2>Actualizar Inversión</h2>
+          <button class="btn-icon modal-close" id="closeUpdateBrokerBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form id="updateBrokerForm">
+          <input type="hidden" id="updateBrokerId">
+          <div class="modal-body" style="padding-bottom: 0;">
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+              Actualiza el saldo actual de tu broker para reflejar los rendimientos. No se registrará como ingreso ni gasto.
+            </p>
+          </div>
+          <div class="form-group update-broker-group" style="padding: 0 24px;">
+            <label for="updateBrokerAmount">Nuevo Saldo Total</label>
+            <div class="currency-input-wrapper">
+              <span class="currency-symbol">$</span>
+              <input type="number" id="updateBrokerAmount" step="0.01" required placeholder="0.00" class="input-lg">
+            </div>
+          </div>
+          <div class="form-actions" style="padding: 24px;">
+            <button type="button" class="btn-secondary" id="cancelUpdateBrokerBtn">Cancelar</button>
+            <button type="submit" class="btn-primary">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Floating Action Button (mobile) -->
+    <button class="fab-add" id="fabAddBtn" aria-label="Agregar transacción">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(registration => {
+          console.log('SW registered:', registration.scope);
+        }).catch(error => {
+          console.log('SW registration failed:', error);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
