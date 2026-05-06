@@ -324,6 +324,12 @@
   }
 
   function openModal(transaction = null) {
+    if (!transaction && state.wallets.length === 0) {
+      showToast('Primero creá una billetera para agregar transacciones', 'error');
+      openWalletModal();
+      return;
+    }
+
     const modal = document.getElementById('transactionModal');
     const form = document.getElementById('transactionForm');
     const modalTitle = document.getElementById('modalTitle');
