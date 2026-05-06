@@ -1381,7 +1381,15 @@ body {
   border-left-color: #F59E0B;
 }
 
+.wallet-item[data-type="bank"] {
+  border-left-color: #3B82F6;
+}
+
 .wallet-item[data-type="broker"] {
+  border-left-color: #EC4899;
+}
+
+.wallet-item[data-type="plazo_fijo"] {
   border-left-color: #EC4899;
 }
 

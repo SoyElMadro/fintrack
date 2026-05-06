@@ -324,6 +324,12 @@
   }
 
   function openModal(transaction = null) {
+    if (!transaction && state.wallets.length === 0) {
+      showToast('Primero creá una billetera para agregar transacciones', 'error');
+      openWalletModal();
+      return;
+    }
+
     const modal = document.getElementById('transactionModal');
     const form = document.getElementById('transactionForm');
     const modalTitle = document.getElementById('modalTitle');
@@ -728,11 +734,19 @@
       }
 
       const displayType = isBank && wallet.bankType ? wallet.bankType : (wallet.type || 'physical');
-      const badgeLabel = displayType.replace('_', ' ');
+      const typeLabels = {
+        'virtual': 'Virtual',
+        'physical': 'Física',
+        'bank': 'Banco',
+        'broker': 'Broker',
+        'caja_ahorro': 'Caja de Ahorro',
+        'plazo_fijo': 'Plazo Fijo'
+      };
+      const badgeLabel = typeLabels[displayType] || displayType;
       const typeColor = displayType === 'plazo_fijo' ? '#EC4899' : '#3B82F6';
 
       html += `
-        <div class="wallet-item" data-type="${wallet.type || 'physical'}" ${isPlazoFijo ? `style="border-left-color: ${typeColor}"` : ''}>
+        <div class="wallet-item" data-type="${wallet.type || 'physical'}">
           <div class="wallet-info">
             <div class="wallet-name-row">
               <span class="wallet-name">${wallet.name}</span>
