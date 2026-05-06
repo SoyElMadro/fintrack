@@ -1409,6 +1409,16 @@ body {
   color: #EC4899;
 }
 
+.wallet-item[data-type="bank"] .wallet-type-badge {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3B82F6;
+}
+
+.wallet-type-badge[style*="EC4899"] {
+  background: rgba(236, 72, 153, 0.12) !important;
+  color: #EC4899 !important;
+}
+
 /* Wallet item hover actions */
 .wallet-item {
   position: relative;

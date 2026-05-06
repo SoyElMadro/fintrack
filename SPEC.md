@@ -156,7 +156,8 @@
 #### 7. Wallet Management
 - **Add Wallet**: Modal form with fields:
   - Name (text, required)
-  - Type: Dropdown (Virtual, Física, Broker)
+  - Type: Dropdown (Virtual, Física, Banco, Broker)
+  - Bank Type (only shown if type is Banco): Caja de Ahorro, Plazo Fijo
   - Currency: Dropdown (ARS, USD)
   - Initial Balance: Number (can be 0)
 - **Edit Wallet**: Same form, pre-filled with wallet data
@@ -164,7 +165,11 @@
 - **Wallet Types**:
   - Virtual (purple indicator) - e.g., Mercado Pago, Prex
   - Physical (amber indicator) - e.g., Cash, Bank account
+  - Bank (blue indicator) - e.g., BBVA, Santander
+    - Caja de Ahorro: Standard bank account
+    - Plazo Fijo: Term deposit with balance update modal
   - Broker (pink indicator) - e.g., BullMarket, broker accounts
+- **Bank/Plazo Fijo Special Feature**: Plazo Fijo wallets can update balance anytime with percentage change display (same as brokers)
 - **Broker Special Feature**: Can update balance anytime to reflect investment value without affecting income/expense calculations
 - **Currency Support**:
   - ARS wallets: Summed in total balance

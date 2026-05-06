@@ -50,6 +50,7 @@
     deletingWalletId: null,
     editingWalletId: null,
     brokerPreviousBalance: null,
+    bankPreviousBalance: null,
     filters: {
       startDate: null,
       endDate: null,
@@ -218,6 +219,7 @@
       if (e.target.id === 'walletModal') closeWalletModal();
     });
     document.getElementById('walletForm').addEventListener('submit', handleWalletSubmit);
+    document.getElementById('walletType').addEventListener('change', toggleBankSubtype);
     document.getElementById('deleteWalletBtn').addEventListener('click', () => {
       if (state.editingWalletId) {
         state.deletingWalletId = state.editingWalletId;
@@ -228,6 +230,14 @@
       document.getElementById('deleteWalletModal').classList.remove('active');
     });
     document.getElementById('confirmDeleteWalletBtn').addEventListener('click', confirmDeleteWallet);
+
+    document.getElementById('closeUpdateBankBtn').addEventListener('click', closeUpdateBank);
+    document.getElementById('cancelUpdateBankBtn').addEventListener('click', closeUpdateBank);
+    document.getElementById('updateBankModal').addEventListener('click', (e) => {
+      if (e.target.id === 'updateBankModal') closeUpdateBank();
+    });
+    document.getElementById('updateBankForm').addEventListener('submit', handleUpdateBankSubmit);
+    document.getElementById('updateBankAmount').addEventListener('input', updateBankChange);
 
     // Mobile sidebar (hamburger drawer)
     const sidebar = document.getElementById('sidebar');
@@ -697,6 +707,8 @@
       const isARS = wallet.currency === 'ARS';
       const noCurrency = !wallet.currency;
       const isBroker = wallet.type === 'broker';
+      const isBank = wallet.type === 'bank';
+      const isPlazoFijo = isBank && wallet.bankType === 'plazo_fijo';
 
       const displayBalance = wallet.currency && wallet.currency !== 'COP'
         ? formatCurrencyWithCurrency(wallet.balance, wallet.currency)
@@ -708,16 +720,23 @@
         equivalentHtml = `<span class="wallet-equivalent">≈ ${formatARS(arsEquiv)}</span>`;
       }
 
-      const editBtnHtml = isBroker
-        ? `<button class="btn-edit-broker" onclick="window.app.openUpdateBroker('${wallet.id}')" title="Actualizar Valor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`
-        : '';
+      let editBtnHtml = '';
+      if (isBroker) {
+        editBtnHtml = `<button class="btn-edit-broker" onclick="window.app.openUpdateBroker('${wallet.id}')" title="Actualizar Valor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`;
+      } else if (isPlazoFijo) {
+        editBtnHtml = `<button class="btn-edit-broker" onclick="window.app.openUpdateBank('${wallet.id}')" title="Actualizar Valor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`;
+      }
+
+      const displayType = isBank && wallet.bankType ? wallet.bankType : (wallet.type || 'physical');
+      const badgeLabel = displayType.replace('_', ' ');
+      const typeColor = displayType === 'plazo_fijo' ? '#EC4899' : '#3B82F6';
 
       html += `
-        <div class="wallet-item" data-type="${wallet.type || 'physical'}">
+        <div class="wallet-item" data-type="${wallet.type || 'physical'}" ${isPlazoFijo ? `style="border-left-color: ${typeColor}"` : ''}>
           <div class="wallet-info">
             <div class="wallet-name-row">
               <span class="wallet-name">${wallet.name}</span>
-              <span class="wallet-type-badge">${wallet.type || 'physical'}</span>
+              <span class="wallet-type-badge" ${displayType === 'plazo_fijo' ? `style="background: rgba(236, 72, 153, 0.12); color: #EC4899;"` : ''}>${badgeLabel}</span>
               ${editBtnHtml}
             </div>
             ${equivalentHtml}
@@ -1341,6 +1360,12 @@
     closeUpdateBroker();
   }
 
+  function toggleBankSubtype() {
+    const type = document.getElementById('walletType').value;
+    const subtypeGroup = document.getElementById('bankSubtypeGroup');
+    subtypeGroup.style.display = type === 'bank' ? 'flex' : 'none';
+  }
+
   function generateWalletId() {
     return 'wallet_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
   }
@@ -1364,13 +1389,21 @@
       document.getElementById('walletType').value = wallet.type || 'physical';
       document.getElementById('walletCurrency').value = wallet.currency || 'ARS';
       document.getElementById('walletBalance').value = wallet.balance;
+      if (wallet.bankType) {
+        document.getElementById('walletBankType').value = wallet.bankType;
+      }
+      toggleBankSubtype();
     } else {
       state.editingWalletId = null;
       modalTitle.textContent = 'Agregar Billetera';
       deleteBtn.style.display = 'none';
 
       document.getElementById('walletEditId').value = '';
+      document.getElementById('walletType').value = '';
+      document.getElementById('walletCurrency').value = 'ARS';
       document.getElementById('walletBalance').value = '';
+      document.getElementById('walletBankType').value = 'caja_ahorro';
+      toggleBankSubtype();
     }
 
     modal.classList.add('active');
@@ -1390,6 +1423,7 @@
     const type = document.getElementById('walletType').value;
     const currency = document.getElementById('walletCurrency').value;
     const balance = parseFloat(document.getElementById('walletBalance').value) || 0;
+    const bankType = type === 'bank' ? document.getElementById('walletBankType').value : null;
 
     let hasError = false;
 
@@ -1411,6 +1445,7 @@
         wallet.name = name;
         wallet.type = type;
         wallet.currency = currency;
+        wallet.bankType = bankType;
         if (balance !== wallet.balance) {
           wallet.balance = balance;
         }
@@ -1422,7 +1457,8 @@
         name,
         type,
         currency,
-        balance
+        balance,
+        bankType
       });
       showToast('Billetera agregada', 'success');
     }
@@ -1460,12 +1496,70 @@
     state.deletingWalletId = null;
   }
 
+  function openUpdateBank(id) {
+    const wallet = state.wallets.find(w => w.id === id);
+    if (!wallet || wallet.type !== 'bank') return;
+    state.bankPreviousBalance = wallet.balance;
+    const isPlazoFijo = wallet.bankType === 'plazo_fijo';
+    document.getElementById('updateBankId').value = id;
+    document.getElementById('updateBankAmount').value = wallet.balance;
+    document.getElementById('updateBankPrevAmount').textContent = wallet.currency === 'USD'
+      ? formatCurrencyWithCurrency(wallet.balance, 'USD')
+      : formatARS(wallet.balance);
+    document.getElementById('updateBankSubtypeLabel').textContent = isPlazoFijo ? 'Plazo Fijo' : 'Caja de Ahorro';
+    document.getElementById('updateBankChange').textContent = '';
+    document.getElementById('updateBankChange').className = 'broker-change';
+    document.getElementById('updateBankModal').classList.add('active');
+  }
+
+  function closeUpdateBank() {
+    document.getElementById('updateBankModal').classList.remove('active');
+    state.bankPreviousBalance = null;
+  }
+
+  function updateBankChange() {
+    const amount = parseFloat(document.getElementById('updateBankAmount').value) || 0;
+    const prevAmount = state.bankPreviousBalance || 0;
+    const changeEl = document.getElementById('updateBankChange');
+
+    if (prevAmount === 0 || amount === 0) {
+      changeEl.textContent = '';
+      changeEl.className = 'broker-change';
+      return;
+    }
+
+    const change = ((amount - prevAmount) / prevAmount) * 100;
+    const isPositive = change >= 0;
+    const sign = isPositive ? '+' : '';
+
+    changeEl.textContent = `${sign}${change.toFixed(2)}%`;
+    changeEl.className = `broker-change ${isPositive ? 'positive' : 'negative'}`;
+  }
+
+  function handleUpdateBankSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('updateBankId').value;
+    const amount = parseFloat(document.getElementById('updateBankAmount').value);
+
+    if (amount >= 0) {
+      const wallet = state.wallets.find(w => w.id === id);
+      if (wallet) {
+        wallet.balance = amount;
+        saveData();
+        renderAll();
+        showToast('Saldo actualizado', 'success');
+      }
+    }
+    closeUpdateBank();
+  }
+
   window.app = {
     editTransaction,
     deleteTransaction,
     openUpdateBroker,
     openEditWallet,
-    deleteWallet
+    deleteWallet,
+    openUpdateBank
   };
 
   document.addEventListener('DOMContentLoaded', init);
