@@ -380,39 +380,75 @@ body {
 .wallet-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
+  align-items: stretch;
+  padding: 12px 14px;
   background: var(--bg);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--primary);
+  border-radius: 10px;
+  border-left: 4px solid var(--primary);
+  gap: 12px;
+  transition: all var(--transition);
+}
+
+.wallet-item:hover {
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.wallet-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.wallet-top-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .wallet-name {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .wallet-balance {
   font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--primary);
+  white-space: nowrap;
 }
 
-.wallet-info {
+.wallet-bottom-row {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .wallet-equivalent {
   font-size: 11px;
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  opacity: 0.8;
+  opacity: 0.85;
   white-space: nowrap;
+}
+
+.wallet-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .wallet-item.wallet-usd {
@@ -1394,12 +1430,13 @@ body {
 }
 
 .wallet-type-badge {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 3px;
+  padding: 2px 7px;
+  border-radius: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
 }
 
 .wallet-item[data-type="virtual"] .wallet-type-badge {
@@ -1435,7 +1472,7 @@ body {
 .wallet-item-actions {
   display: flex;
   gap: 4px;
-  opacity: 0;
+  opacity: 0.5;
   transition: opacity var(--transition);
 }
 
@@ -1686,10 +1723,11 @@ body {
 }
 
 /* Update Broker Styles */
-.wallet-name-row {
+.wallet-top-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .btn-edit-broker {
@@ -1975,34 +2013,39 @@ body {
   }
 
   .wallets-section {
-    padding: 14px;
+    padding: 16px;
   }
 
   .wallets-list {
     max-height: none;
     overflow: visible;
-    gap: 6px;
+    gap: 8px;
   }
 
   .wallet-item {
-    padding: 10px 12px;
-    min-height: auto;
+    padding: 11px 12px;
+    gap: 10px;
   }
 
   .wallet-name {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .wallet-balance {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .wallet-type-badge {
-    font-size: 8px;
+    font-size: 9px;
+    padding: 2px 6px;
   }
 
-  .wallet-info {
-    gap: 2px;
+  .wallet-left {
+    gap: 5px;
+  }
+
+  .wallet-right {
+    gap: 6px;
   }
 
   .wallet-equivalent {
@@ -2010,17 +2053,17 @@ body {
   }
 
   .wallet-total {
-    padding-top: 10px;
+    padding-top: 12px;
     font-size: 13px;
   }
 
   .wallet-dolar-mep {
-    padding: 6px 10px;
+    padding: 8px 10px;
     font-size: 11px;
   }
 
   .wallets-header {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
   .wallets-header h3 {
@@ -2387,60 +2430,65 @@ body {
   }
 
   .wallets-section {
-    padding: 12px;
+    padding: 14px;
   }
 
   .wallets-list {
     max-height: none;
     overflow: visible;
-    gap: 5px;
+    gap: 6px;
   }
 
   .wallet-item {
-    padding: 8px 10px;
+    padding: 10px 12px;
+    gap: 10px;
   }
 
   .wallet-name {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .wallet-balance {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .wallet-type-badge {
-    font-size: 7px;
+    font-size: 9px;
+    padding: 2px 5px;
   }
 
-  .wallet-info {
-    gap: 1px;
-    min-width: 0;
-  }
-
-  .wallet-name-row {
+  .wallet-left {
     gap: 4px;
   }
 
+  .wallet-right {
+    gap: 6px;
+  }
+
+  .wallet-top-row {
+    gap: 6px;
+  }
+
   .wallet-equivalent {
-    font-size: 9px;
-  }
-
-  .wallet-total {
-    padding-top: 8px;
-    font-size: 12px;
-  }
-
-  .wallet-dolar-mep {
-    padding: 5px 8px;
     font-size: 10px;
   }
 
+  .wallet-total {
+    padding-top: 10px;
+    font-size: 13px;
+  }
+
+  .wallet-dolar-mep {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
   .wallets-header {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
   .wallets-header h3 {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .wallets-actions {
@@ -2449,8 +2497,8 @@ body {
 
   .btn-add-wallet,
   .btn-transfer {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
   }
 
   .fab-add {
@@ -2498,6 +2546,28 @@ body {
 
   .wallet-item-actions {
     opacity: 1;
+  }
+
+  .wallet-item {
+    padding: 10px 10px;
+    gap: 8px;
+  }
+
+  .wallet-name {
+    font-size: 12px;
+  }
+
+  .wallet-balance {
+    font-size: 13px;
+  }
+
+  .wallet-type-badge {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+
+  .wallet-equivalent {
+    font-size: 9px;
   }
 
   .fab-add {
