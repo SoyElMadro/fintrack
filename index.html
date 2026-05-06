@@ -107,12 +107,18 @@
         <div class="wallets-section">
           <div class="wallets-header">
             <h3>Billeteras</h3>
-            <button class="btn-transfer" id="openTransferBtn" title="Transferir entre billeteras">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M7 16l-4-4 4-4M17 8l4 4-4 4M3 12h18"/>
-              </svg>
-              Transferir
-            </button>
+            <div class="wallets-actions">
+              <button class="btn-add-wallet" id="openWalletModalBtn" title="Agregar billetera">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+              </button>
+              <button class="btn-transfer" id="openTransferBtn" title="Transferir entre billeteras">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M7 16l-4-4 4-4M17 8l4 4-4 4M3 12h18"/>
+                </svg>
+              </button>
+            </div>
           </div>
           <div class="wallets-list" id="walletsList"></div>
           <div class="wallet-total">
@@ -362,6 +368,69 @@
       </div>
     </div>
 
+    <!-- Wallet Management Modal -->
+    <div class="modal-overlay" id="walletModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="walletModalTitle">Agregar Billetera</h2>
+          <button class="btn-icon modal-close" id="closeWalletModalBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form id="walletForm">
+          <input type="hidden" id="walletEditId">
+          <div class="form-group">
+            <label for="walletName">Nombre</label>
+            <input type="text" id="walletName" maxlength="50" required placeholder="Ej: Mercado Pago, BBVA, Cash">
+          </div>
+          <div class="form-group">
+            <label for="walletType">Tipo</label>
+            <select id="walletType" required>
+              <option value="">Seleccionar tipo</option>
+              <option value="virtual">Virtual</option>
+              <option value="physical">Física</option>
+              <option value="broker">Broker</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="walletCurrency">Moneda</label>
+            <select id="walletCurrency" required>
+              <option value="ARS" selected>Pesos Argentinos (ARS)</option>
+              <option value="USD">Dólares (USD)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="walletBalance">Saldo Inicial</label>
+            <input type="number" id="walletBalance" step="0.01" min="0" required placeholder="0.00">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-danger" id="deleteWalletBtn" style="display: none;">Eliminar</button>
+            <div style="flex: 1;"></div>
+            <button type="button" class="btn-secondary" id="cancelWalletBtn">Cancelar</button>
+            <button type="submit" class="btn-primary" id="saveWalletBtn">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Wallet Confirmation -->
+    <div class="modal-overlay" id="deleteWalletModal">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <h2>Eliminar Billetera</h2>
+        </div>
+        <div class="modal-body">
+          <p>¿Eliminar esta billetera? Las transacciones asociadas no se borrarán, pero quedarán sin billetera asignada.</p>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" id="cancelDeleteWalletBtn">Cancelar</button>
+          <button class="btn-danger" id="confirmDeleteWalletBtn">Eliminar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Update Broker Modal -->
     <div class="modal-overlay" id="updateBrokerModal">
       <div class="modal modal-small">
@@ -377,7 +446,7 @@
           <input type="hidden" id="updateBrokerId">
           <div class="modal-body" style="padding-bottom: 0;">
             <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-              Actualiza el saldo actual de tu broker para reflejar los rendimientos. No se registrará como ingreso ni gasto.
+              Actualiza el saldo actual de tu broker para reflejar los rendimientos.
             </p>
           </div>
           <div class="form-group update-broker-group" style="padding: 0 24px;">
@@ -385,6 +454,10 @@
             <div class="currency-input-wrapper">
               <span class="currency-symbol">$</span>
               <input type="number" id="updateBrokerAmount" step="0.01" required placeholder="0.00" class="input-lg">
+            </div>
+            <div class="broker-compare">
+              <span class="broker-prev">Anterior: <span id="updateBrokerPrevAmount">$0</span></span>
+              <span class="broker-change" id="updateBrokerChange"></span>
             </div>
           </div>
           <div class="form-actions" style="padding: 24px;">

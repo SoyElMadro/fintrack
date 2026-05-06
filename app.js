@@ -34,28 +34,22 @@
     expense: ['#EF4444', '#F87171', '#FCA5A5', '#FECACA', '#991B1B', '#7F1D1D', '#B91C1C', '#DC2626']
   };
 
-  const DEFAULT_WALLETS = [
-    { id: 'mercado_pago', name: 'Mercado Pago', balance: 20095.44, type: 'virtual' },
-    { id: 'prex', name: 'Prex', balance: 290290.52, type: 'virtual' },
-    { id: 'bbva_ahorro', name: 'BBVA - Caja de ahorro', balance: 2.44, type: 'bank' },
-    { id: 'bbva_plazo', name: 'BBVA - Plazo Fijo', balance: 105944.01, type: 'bank' },
-    { id: 'bullmarket', name: 'BullMarket', balance: 1194512.13, type: 'broker', currency: 'ARS' },
-    { id: 'efectivo_usd', name: 'Efectivo USD', balance: 200, type: 'cash', currency: 'USD' },
-    { id: 'efectivo_ars', name: 'Efectivo ARS', balance: 210000, type: 'cash', currency: 'ARS' },
-    { id: 'efectivo_cop', name: 'En Billetera', balance: 22000, type: 'cash' }
-  ];
+  const DEFAULT_WALLETS = [];
 
   let state = {
     transactions: [],
     wallets: [],
     settings: {
-      monthlyBudget: 2000000,
+      monthlyBudget: 0,
       darkMode: false,
-      currency: 'COP'
+      currency: 'ARS'
     },
     dolarMEP: null,
     editingId: null,
     deletingId: null,
+    deletingWalletId: null,
+    editingWalletId: null,
+    brokerPreviousBalance: null,
     filters: {
       startDate: null,
       endDate: null,
@@ -63,51 +57,6 @@
       category: 'all'
     }
   };
-
-  // Hardcoded transactions from txt files (always loaded into memory)
-  const SEED_INGRESOS = [
-    { day: '02', amount: 100000, description: 'Programa + Edición', month: '05', year: 2026 },
-    { day: '04', amount: 35000,  description: 'Envíos',             month: '05', year: 2026 }
-  ];
-
-  const SEED_GASTOS = [
-    { day: '02', amount: 21302,    description: 'Capcut',                      month: '05', year: 2026 },
-    { day: '02', amount: 3600,     description: 'Futbol',                      month: '05', year: 2026 },
-    { day: '02', amount: 4800,     description: 'Coca (pedido mamá y papá)',    month: '05', year: 2026 },
-    { day: '05', amount: 2389.26,  description: 'Spotify Premium',             month: '05', year: 2026 }
-  ];
-
-  function buildSeedTransactions() {
-    const txns = [];
-
-    SEED_INGRESOS.forEach(s => {
-      txns.push({
-        id: `seed_income_${s.year}${s.month}${s.day}_${s.description.replace(/\s/g, '_')}`,
-        amount: s.amount,
-        type: 'income',
-        category: detectIncomeCategory(s.description),
-        description: s.description,
-        date: `${s.year}-${s.month}-${s.day}`,
-        createdAt: new Date().toISOString(),
-        _seed: true
-      });
-    });
-
-    SEED_GASTOS.forEach(s => {
-      txns.push({
-        id: `seed_expense_${s.year}${s.month}${s.day}_${s.description.replace(/\s/g, '_')}`,
-        amount: s.amount,
-        type: 'expense',
-        category: detectExpenseCategory(s.description),
-        description: s.description,
-        date: `${s.year}-${s.month}-${s.day}`,
-        createdAt: new Date().toISOString(),
-        _seed: true
-      });
-    });
-
-    return txns;
-  }
 
   async function init() {
     loadData();
@@ -159,55 +108,7 @@
       state.wallets = [...DEFAULT_WALLETS];
     }
 
-    // Always inject seed transactions + user transactions
-    const seeds = buildSeedTransactions();
-    state.transactions = [...seeds, ...userTransactions];
-  }
-
-  function detectIncomeCategory(description) {
-    const desc = description.toLowerCase();
-    if (desc.includes('programa') || desc.includes('edición') || desc.includes('envíos') || desc.includes('freelance')) {
-      return 'Freelance';
-    }
-    if (desc.includes('inversión') || desc.includes('rendimiento')) {
-      return 'Inversión';
-    }
-    if (desc.includes('regalo') || desc.includes('bonus')) {
-      return 'Regalo';
-    }
-    return 'Salario';
-  }
-
-  function detectExpenseCategory(description) {
-    const desc = description.toLowerCase();
-    if (desc.includes('comida') || desc.includes('coca') || desc.includes('almuerzo') || desc.includes('desayuno') || desc.includes('restaurante')) {
-      return 'Comida';
-    }
-    if (desc.includes('transporte') || desc.includes('uber') || desc.includes('taxi') || desc.includes('bus') || desc.includes('metro')) {
-      return 'Transporte';
-    }
-    if (desc.includes('arriendo') || desc.includes('apartamento') || desc.includes('casa')) {
-      return 'Vivienda';
-    }
-    if (desc.includes('luz') || desc.includes('agua') || desc.includes('internet') || desc.includes('teléfono') || desc.includes('netflix') || desc.includes('spotify') || desc.includes('servicio')) {
-      return 'Servicios';
-    }
-    if (desc.includes('película') || desc.includes('cine') || desc.includes('juego') || desc.includes('capcut') || desc.includes('entretenimiento')) {
-      return 'Entretenimiento';
-    }
-    if (desc.includes('ropa') || desc.includes('zapatos') || desc.includes('tienda') || desc.includes('compras')) {
-      return 'Compras';
-    }
-    if (desc.includes('médico') || desc.includes('doctor') || desc.includes('farmacia') || desc.includes('salud') || desc.includes('gimnasio')) {
-      return 'Salud';
-    }
-    if (desc.includes('curso') || desc.includes('libro') || desc.includes('educación') || desc.includes('universidad') || desc.includes('escuela')) {
-      return 'Educación';
-    }
-    if (desc.includes('futbol') || desc.includes('deporte') || desc.includes('sport')) {
-      return 'Entretenimiento';
-    }
-    return 'Otro';
+    state.transactions = userTransactions;
   }
 
   function saveData() {
@@ -233,8 +134,9 @@
   }
 
   function formatDate(dateStr) {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const parts = dateStr.split('-');
+    const date = new Date(parts[0], parts[1] - 1, parts[2]);
+    return date.toLocaleDateString('es-AR', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   function getMonthName(monthIndex) {
@@ -307,6 +209,25 @@
       if (e.target.id === 'updateBrokerModal') closeUpdateBroker();
     });
     document.getElementById('updateBrokerForm').addEventListener('submit', handleUpdateBrokerSubmit);
+    document.getElementById('updateBrokerAmount').addEventListener('input', updateBrokerChange);
+
+    document.getElementById('openWalletModalBtn').addEventListener('click', () => openWalletModal());
+    document.getElementById('closeWalletModalBtn').addEventListener('click', closeWalletModal);
+    document.getElementById('cancelWalletBtn').addEventListener('click', closeWalletModal);
+    document.getElementById('walletModal').addEventListener('click', (e) => {
+      if (e.target.id === 'walletModal') closeWalletModal();
+    });
+    document.getElementById('walletForm').addEventListener('submit', handleWalletSubmit);
+    document.getElementById('deleteWalletBtn').addEventListener('click', () => {
+      if (state.editingWalletId) {
+        state.deletingWalletId = state.editingWalletId;
+        document.getElementById('deleteWalletModal').classList.add('active');
+      }
+    });
+    document.getElementById('cancelDeleteWalletBtn').addEventListener('click', () => {
+      document.getElementById('deleteWalletModal').classList.remove('active');
+    });
+    document.getElementById('confirmDeleteWalletBtn').addEventListener('click', confirmDeleteWallet);
 
     // Mobile sidebar (hamburger drawer)
     const sidebar = document.getElementById('sidebar');
@@ -607,9 +528,11 @@
 
       return true;
     }).sort((a, b) => {
-      if (a.date !== b.date) {
-        return new Date(b.date) - new Date(a.date);
-      }
+      const dateA = a.date.split('-').map(Number);
+      const dateB = b.date.split('-').map(Number);
+      if (dateB[0] !== dateA[0]) return dateB[0] - dateA[0];
+      if (dateB[1] !== dateA[1]) return dateB[1] - dateA[1];
+      if (dateB[2] !== dateA[2]) return dateB[2] - dateA[2];
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     });
   }
@@ -750,9 +673,24 @@
     const container = document.getElementById('walletsList');
     if (!container) return;
 
-    let html = '';
     let totalARS = 0;
     const mepVenta = state.dolarMEP ? state.dolarMEP.venta : null;
+
+    if (state.wallets.length === 0) {
+      container.innerHTML = `
+        <div class="wallets-list-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M12 10v4M10 12h4"/>
+          </svg>
+          <p>No hay billeteras.<br>Haz clic en <strong>+</strong> para agregar una.</p>
+        </div>
+      `;
+      document.getElementById('walletsTotal').textContent = '$0 ARS';
+      return;
+    }
+
+    let html = '';
 
     state.wallets.forEach(wallet => {
       const isUSD = wallet.currency === 'USD';
@@ -760,42 +698,56 @@
       const noCurrency = !wallet.currency;
       const isBroker = wallet.type === 'broker';
 
-      const displayBalance = wallet.currency && wallet.currency !== 'COP' 
+      const displayBalance = wallet.currency && wallet.currency !== 'COP'
         ? formatCurrencyWithCurrency(wallet.balance, wallet.currency)
         : formatCurrency(wallet.balance);
 
-      // USD wallets: show equivalent in ARS but DON'T add to total
       let equivalentHtml = '';
       if (isUSD && mepVenta) {
         const arsEquiv = wallet.balance * mepVenta;
         equivalentHtml = `<span class="wallet-equivalent">≈ ${formatARS(arsEquiv)}</span>`;
       }
-      
-      const editBtnHtml = isBroker ? `<button class="btn-edit-broker" onclick="window.app.openUpdateBroker('${wallet.id}')" title="Actualizar Valor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>` : '';
+
+      const editBtnHtml = isBroker
+        ? `<button class="btn-edit-broker" onclick="window.app.openUpdateBroker('${wallet.id}')" title="Actualizar Valor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`
+        : '';
 
       html += `
-        <div class="wallet-item${isUSD ? ' wallet-usd' : ''}">
+        <div class="wallet-item" data-type="${wallet.type || 'physical'}">
           <div class="wallet-info">
             <div class="wallet-name-row">
               <span class="wallet-name">${wallet.name}</span>
+              <span class="wallet-type-badge">${wallet.type || 'physical'}</span>
               ${editBtnHtml}
             </div>
             ${equivalentHtml}
           </div>
-          <span class="wallet-balance">${displayBalance}</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="wallet-balance">${displayBalance}</span>
+            <div class="wallet-item-actions">
+              <button class="btn-wallet-action" onclick="window.app.openEditWallet('${wallet.id}')" title="Editar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button class="btn-wallet-action delete" onclick="window.app.deleteWallet('${wallet.id}')" title="Eliminar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       `;
-      
-      // Sum ARS wallets to total (including Efectivo ARS)
+
       if (isARS || noCurrency) {
         totalARS += wallet.balance;
       }
-      // USD is intentionally NOT added to the total
     });
 
-    // Show dolar MEP rate if available
     if (state.dolarMEP) {
-      const fechaStr = state.dolarMEP.fecha 
+      const fechaStr = state.dolarMEP.fecha
         ? new Date(state.dolarMEP.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
         : '';
       html += `
@@ -807,7 +759,7 @@
     }
 
     container.innerHTML = html;
-    document.getElementById('walletsTotal').textContent = formatARS(totalARS);
+    document.getElementById('walletsTotal').textContent = formatARS(totalARS) + ' ARS';
   }
 
   function formatARS(amount) {
@@ -925,11 +877,11 @@
       <div class="chart-legend">
         <div class="legend-item">
           <span class="legend-dot income"></span>
-          <span>Income</span>
+          <span>Ingresos</span>
         </div>
         <div class="legend-item">
           <span class="legend-dot expense"></span>
-          <span>Expenses</span>
+          <span>Gastos</span>
         </div>
       </div>
     `;
@@ -1254,6 +1206,7 @@
     const data = {
       transactions: state.transactions,
       settings: state.settings,
+      wallets: state.wallets,
       exportDate: new Date().toISOString()
     };
 
@@ -1283,6 +1236,10 @@
 
         if (data.settings) {
           state.settings = { ...state.settings, ...data.settings };
+        }
+
+        if (data.wallets && Array.isArray(data.wallets)) {
+          state.wallets = data.wallets;
         }
 
         saveData();
@@ -1332,13 +1289,39 @@
   function openUpdateBroker(id) {
     const wallet = state.wallets.find(w => w.id === id);
     if (!wallet) return;
+    state.brokerPreviousBalance = wallet.balance;
     document.getElementById('updateBrokerId').value = id;
     document.getElementById('updateBrokerAmount').value = wallet.balance;
+    document.getElementById('updateBrokerPrevAmount').textContent = wallet.currency === 'USD'
+      ? formatCurrencyWithCurrency(wallet.balance, 'USD')
+      : formatARS(wallet.balance);
+    document.getElementById('updateBrokerChange').textContent = '';
+    document.getElementById('updateBrokerChange').className = 'broker-change';
     document.getElementById('updateBrokerModal').classList.add('active');
   }
 
   function closeUpdateBroker() {
     document.getElementById('updateBrokerModal').classList.remove('active');
+    state.brokerPreviousBalance = null;
+  }
+
+  function updateBrokerChange() {
+    const amount = parseFloat(document.getElementById('updateBrokerAmount').value) || 0;
+    const prevAmount = state.brokerPreviousBalance || 0;
+    const changeEl = document.getElementById('updateBrokerChange');
+
+    if (prevAmount === 0 || amount === 0) {
+      changeEl.textContent = '';
+      changeEl.className = 'broker-change';
+      return;
+    }
+
+    const change = ((amount - prevAmount) / prevAmount) * 100;
+    const isPositive = change >= 0;
+    const sign = isPositive ? '+' : '';
+
+    changeEl.textContent = `${sign}${change.toFixed(2)}%`;
+    changeEl.className = `broker-change ${isPositive ? 'positive' : 'negative'}`;
   }
 
   function handleUpdateBrokerSubmit(e) {
@@ -1358,10 +1341,131 @@
     closeUpdateBroker();
   }
 
+  function generateWalletId() {
+    return 'wallet_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+  }
+
+  function openWalletModal(wallet = null) {
+    const modal = document.getElementById('walletModal');
+    const form = document.getElementById('walletForm');
+    const modalTitle = document.getElementById('walletModalTitle');
+    const deleteBtn = document.getElementById('deleteWalletBtn');
+
+    form.reset();
+    clearErrors();
+
+    if (wallet) {
+      state.editingWalletId = wallet.id;
+      modalTitle.textContent = 'Editar Billetera';
+      deleteBtn.style.display = 'block';
+
+      document.getElementById('walletEditId').value = wallet.id;
+      document.getElementById('walletName').value = wallet.name;
+      document.getElementById('walletType').value = wallet.type || 'physical';
+      document.getElementById('walletCurrency').value = wallet.currency || 'ARS';
+      document.getElementById('walletBalance').value = wallet.balance;
+    } else {
+      state.editingWalletId = null;
+      modalTitle.textContent = 'Agregar Billetera';
+      deleteBtn.style.display = 'none';
+
+      document.getElementById('walletEditId').value = '';
+      document.getElementById('walletBalance').value = '';
+    }
+
+    modal.classList.add('active');
+    document.getElementById('walletName').focus();
+  }
+
+  function closeWalletModal() {
+    document.getElementById('walletModal').classList.remove('active');
+    state.editingWalletId = null;
+  }
+
+  function handleWalletSubmit(e) {
+    e.preventDefault();
+    clearErrors();
+
+    const name = document.getElementById('walletName').value.trim();
+    const type = document.getElementById('walletType').value;
+    const currency = document.getElementById('walletCurrency').value;
+    const balance = parseFloat(document.getElementById('walletBalance').value) || 0;
+
+    let hasError = false;
+
+    if (!name) {
+      showError('walletName', 'Ingresa un nombre');
+      hasError = true;
+    }
+
+    if (!type) {
+      showError('walletType', 'Selecciona un tipo');
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    if (state.editingWalletId) {
+      const wallet = state.wallets.find(w => w.id === state.editingWalletId);
+      if (wallet) {
+        wallet.name = name;
+        wallet.type = type;
+        wallet.currency = currency;
+        if (balance !== wallet.balance) {
+          wallet.balance = balance;
+        }
+        showToast('Billetera actualizada', 'success');
+      }
+    } else {
+      state.wallets.push({
+        id: generateWalletId(),
+        name,
+        type,
+        currency,
+        balance
+      });
+      showToast('Billetera agregada', 'success');
+    }
+
+    saveData();
+    closeWalletModal();
+    renderAll();
+  }
+
+  function openEditWallet(id) {
+    const wallet = state.wallets.find(w => w.id === id);
+    if (wallet) {
+      openWalletModal(wallet);
+    }
+  }
+
+  function deleteWallet(id) {
+    state.deletingWalletId = id;
+    document.getElementById('deleteWalletModal').classList.add('active');
+  }
+
+  function confirmDeleteWallet() {
+    if (state.deletingWalletId) {
+      state.wallets = state.wallets.filter(w => w.id !== state.deletingWalletId);
+      state.transactions.forEach(t => {
+        if (t.walletId === state.deletingWalletId) {
+          t.walletId = null;
+        }
+      });
+      saveData();
+      renderAll();
+      showToast('Billetera eliminada', 'success');
+    }
+    document.getElementById('deleteWalletModal').classList.remove('active');
+    state.deletingWalletId = null;
+  }
+
   window.app = {
     editTransaction,
     deleteTransaction,
-    openUpdateBroker
+    openUpdateBroker,
+    openEditWallet,
+    deleteWallet
   };
 
   document.addEventListener('DOMContentLoaded', init);

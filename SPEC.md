@@ -153,6 +153,24 @@
 - Warning when exceeded (red color)
 - Reset option for new month
 
+#### 7. Wallet Management
+- **Add Wallet**: Modal form with fields:
+  - Name (text, required)
+  - Type: Dropdown (Virtual, Física, Broker)
+  - Currency: Dropdown (ARS, USD)
+  - Initial Balance: Number (can be 0)
+- **Edit Wallet**: Same form, pre-filled with wallet data
+- **Delete Wallet**: Confirmation prompt, removes wallet but keeps associated transactions
+- **Wallet Types**:
+  - Virtual (purple indicator) - e.g., Mercado Pago, Prex
+  - Physical (amber indicator) - e.g., Cash, Bank account
+  - Broker (pink indicator) - e.g., BullMarket, broker accounts
+- **Broker Special Feature**: Can update balance anytime to reflect investment value without affecting income/expense calculations
+- **Currency Support**:
+  - ARS wallets: Summed in total balance
+  - USD wallets: Show equivalent in ARS but NOT added to total
+- **Empty State**: Shows message prompting user to add first wallet
+
 ### Data Handling
 
 #### localStorage Schema
@@ -166,13 +184,25 @@
       "category": "Salary",
       "description": "Monthly salary",
       "date": "2024-01-15",
+      "walletId": "wallet_id" | null,
+      "transferGroupId": "transfer_uuid" | null,
+      "transferType": "in" | "out" | null,
       "createdAt": "timestamp"
+    }
+  ],
+  "fintrack_wallets": [
+    {
+      "id": "wallet_id",
+      "name": "Wallet Name",
+      "type": "virtual" | "physical" | "broker",
+      "currency": "ARS" | "USD",
+      "balance": 1000.00
     }
   ],
   "fintrack_settings": {
     "monthlyBudget": 2000,
     "darkMode": false,
-    "currency": "USD"
+    "currency": "ARS"
   }
 }
 ```
