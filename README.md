@@ -233,24 +233,24 @@
 ## Acceptance Criteria
 
 ### Visual Checkpoints
-- [ ] App loads with clean dashboard showing 3 stat cards
-- [ ] Sidebar shows navigation and "Add Transaction" button
-- [ ] Transaction list displays with proper formatting
-- [ ] Charts render with correct data visualization
-- [ ] Dark mode toggle works and persists
-- [ ] Modal opens/closes smoothly
-- [ ] Responsive: stacks properly on mobile
+- [✅] App loads with clean dashboard showing 3 stat cards
+- [✅] Sidebar shows navigation and "Add Transaction" button
+- [✅] Transaction list displays with proper formatting
+- [✅] Charts render with correct data visualization
+- [✅] Dark mode toggle works and persists
+- [✅] Modal opens/closes smoothly
+- [✅] Responsive: stacks properly on mobile
 
 ### Functional Checkpoints
-- [ ] Can add new transaction with all fields
-- [ ] Can edit existing transaction
-- [ ] Can delete transaction with confirmation
-- [ ] Transactions persist after page reload
-- [ ] Dashboard numbers calculate correctly
-- [ ] Filters work for date range, type, category
-- [ ] Charts update when data changes
-- [ ] Budget progress shows correctly
-- [ ] Export downloads JSON file
-- [ ] Import loads data from JSON file
-- [ ] Empty states display properly
-- [ ] Form validation prevents invalid data
+- [✅] Can add new transaction with all fields
+- [✅] Can edit existing transaction
+- [✅] Can delete transaction with confirmation
+- [✅] Transactions persist after page reload
+- [✅] Dashboard numbers calculate correctly
+- [✅] Filters work for date range, type, category
+- [✅] Charts update when data changes
+- [✅] Budget progress shows correctly
+- [✅] Export downloads JSON file
+- [✅] Import loads data from JSON file
+- [✅] Empty states display properly
+- [✅] Form validation prevents invalid data
