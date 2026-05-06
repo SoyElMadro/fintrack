@@ -391,7 +391,15 @@
               <option value="">Seleccionar tipo</option>
               <option value="virtual">Virtual</option>
               <option value="physical">Física</option>
+              <option value="bank">Banco</option>
               <option value="broker">Broker</option>
+            </select>
+          </div>
+          <div class="form-group" id="bankSubtypeGroup" style="display: none;">
+            <label for="walletBankType">Tipo de Banco</label>
+            <select id="walletBankType">
+              <option value="caja_ahorro">Caja de Ahorro</option>
+              <option value="plazo_fijo">Plazo Fijo</option>
             </select>
           </div>
           <div class="form-group">
@@ -462,6 +470,43 @@
           </div>
           <div class="form-actions" style="padding: 24px;">
             <button type="button" class="btn-secondary" id="cancelUpdateBrokerBtn">Cancelar</button>
+            <button type="submit" class="btn-primary">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Update Bank/Plazo Fijo Modal -->
+    <div class="modal-overlay" id="updateBankModal">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <h2>Actualizar Saldo</h2>
+          <button class="btn-icon modal-close" id="closeUpdateBankBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form id="updateBankForm">
+          <input type="hidden" id="updateBankId">
+          <div class="modal-body" style="padding-bottom: 0;">
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+              <span id="updateBankSubtypeLabel">Caja de Ahorro</span> — Ingresá el saldo actual.
+            </p>
+          </div>
+          <div class="form-group update-broker-group" style="padding: 0 24px;">
+            <label for="updateBankAmount">Nuevo Saldo</label>
+            <div class="currency-input-wrapper">
+              <span class="currency-symbol">$</span>
+              <input type="number" id="updateBankAmount" step="0.01" required placeholder="0.00" class="input-lg">
+            </div>
+            <div class="broker-compare">
+              <span class="broker-prev">Anterior: <span id="updateBankPrevAmount">$0</span></span>
+              <span class="broker-change" id="updateBankChange"></span>
+            </div>
+          </div>
+          <div class="form-actions" style="padding: 24px;">
+            <button type="button" class="btn-secondary" id="cancelUpdateBankBtn">Cancelar</button>
             <button type="submit" class="btn-primary">Guardar Cambios</button>
           </div>
         </form>
