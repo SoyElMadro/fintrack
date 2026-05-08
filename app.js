@@ -847,12 +847,22 @@
       } else if (newTransaction.walletId === oldTransaction.walletId) {
         const wallet = state.wallets.find(w => w.id === newTransaction.walletId);
         if (wallet) {
-          const diff = newTransaction.amount - oldTransaction.amount;
           if (newTransaction.type === 'expense') {
-            wallet.balance -= diff;
+            wallet.balance -= newTransaction.amount;
           } else {
-            wallet.balance += diff;
+            wallet.balance += newTransaction.amount;
           }
+        }
+      }
+    }
+    
+    if (oldTransaction && !oldTransaction.walletId && newTransaction.walletId) {
+      const wallet = state.wallets.find(w => w.id === newTransaction.walletId);
+      if (wallet) {
+        if (newTransaction.type === 'expense') {
+          wallet.balance -= newTransaction.amount;
+        } else {
+          wallet.balance += newTransaction.amount;
         }
       }
     }
