@@ -1,26 +1,34 @@
-const CACHE_NAME = 'fintrack-v1';
+const CACHE_NAME = 'fintrack-v2';
 const EXTERNAL_CACHE_NAME = 'fintrack-external-v1';
 
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/icon-192-maskable.png',
-  '/icon-512-maskable.png'
-];
-
 const EXTERNAL_HOSTS = ['dolarapi.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
+
+function getBasePath() {
+  const pathname = new URL(self.registration.scope).pathname;
+  return pathname.endsWith('/') ? pathname : `${pathname}/`;
+}
+
+function getUrlsToCache() {
+  const base = getBasePath();
+  return [
+    base,
+    `${base}index.html`,
+    `${base}styles.css`,
+    `${base}app.js`,
+    `${base}manifest.json`,
+    `${base}icon-192.png`,
+    `${base}icon-512.png`,
+    `${base}icon-192-maskable.png`,
+    `${base}icon-512-maskable.png`
+  ];
+}
 
 // ── Install ──────────────────────────────────────────────────────────────────
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      .then((cache) => cache.addAll(getUrlsToCache()))
       .then(() => self.skipWaiting()) // solo si el caché se completó OK
   );
 });
@@ -82,7 +90,11 @@ async function cacheFirst(request) {
   } catch {
     // Fallback a index.html para navegación offline
     if (request.destination === 'document') {
-      return caches.match('/index.html');
+      const base = getBasePath();
+      return (
+        (await caches.match(`${base}index.html`)) ||
+        (await caches.match(base))
+      );
     }
     return new Response('Recurso no disponible', { status: 503 });
   }
