@@ -549,12 +549,15 @@
         navigator.serviceWorker.register('sw.js').then(registration => {
           console.log('SW registered:', registration.scope);
 
+          let hasShownUpdateBanner = false;
+
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             if (!newWorker) return;
 
             newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller && !hasShownUpdateBanner) {
+                hasShownUpdateBanner = true;
                 const banner = document.getElementById('updateBanner');
                 const reloadBtn = document.getElementById('updateReloadBtn');
                 if (banner && reloadBtn) {
