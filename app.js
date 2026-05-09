@@ -3,13 +3,37 @@
 
   let deferredPrompt = null;
 
+  /** Vista estrecha (sidebar tipo drawer) o dispositivo táctil típico de móvil/tableta */
+  function shouldOfferPwaInstall() {
+    if (window.innerWidth <= 860) return true;
+    const ua = navigator.userAgent || '';
+    if (/Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua)) return true;
+    try {
+      if (window.matchMedia('(pointer: coarse)').matches && window.matchMedia('(hover: none)').matches) {
+        return true;
+      }
+    } catch (err) { /* ignore */ }
+    return false;
+  }
+
+  function refreshPwaInstallButton() {
+    const installBtn = document.getElementById('installAppBtn');
+    if (!installBtn) return;
+    const standalone = window.matchMedia('(display-mode: standalone)').matches;
+    const canShow = Boolean(deferredPrompt) && !standalone && shouldOfferPwaInstall();
+    installBtn.classList.toggle('show', canShow);
+    installBtn.setAttribute('aria-hidden', canShow ? 'false' : 'true');
+  }
+
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
+    refreshPwaInstallButton();
   });
 
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
+    refreshPwaInstallButton();
   });
 
   const STORAGE_KEYS = {
@@ -281,25 +305,19 @@
       openModal();
     });
 
-    // Install PWA button
+    // Install PWA (solo móvil / vista estrecha; beforeinstallprompt llega async)
     const installBtn = document.getElementById('installAppBtn');
-    if (deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
-      installBtn.classList.add('show');
-    }
+    installBtn.setAttribute('aria-hidden', 'true');
+    refreshPwaInstallButton();
     installBtn.addEventListener('click', async () => {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
-      const result = await deferredPrompt.userChoice;
+      await deferredPrompt.userChoice;
       deferredPrompt = null;
-      installBtn.classList.remove('show');
+      refreshPwaInstallButton();
     });
 
-    // Hide install button if already in standalone mode
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      installBtn.classList.remove('show');
-    }
-
-    // On resize: if going back to desktop, reset sidebar state
+    // On resize: sidebar desktop + visibilidad del botón instalar
     window.addEventListener('resize', () => {
       if (window.innerWidth > 860) {
         sidebar.classList.remove('open');
@@ -307,6 +325,7 @@
         sidebarCloseBtn.style.display = 'none';
         document.body.style.overflow = '';
       }
+      refreshPwaInstallButton();
     });
   }
 
