@@ -1,34 +1,35 @@
 {
-  "id": "https://soyelmadro.github.io/fintrack/",
+  "id": "fintrack",
   "name": "FinTrack - Gestor de Finanzas",
   "short_name": "FinTrack",
   "description": "Gestor de finanzas personales con seguimiento de gastos, ingresos y presupuestos",
-  "start_url": "https://soyelmadro.github.io/fintrack/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#F8FAFC",
   "theme_color": "#10B981",
   "orientation": "portrait-primary",
+  "scope": "./",
   "icons": [
     {
-      "src": "https://soyelmadro.github.io/fintrack/icon-192.png",
+      "src": "icon-192.png?v=1",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://soyelmadro.github.io/fintrack/icon-192-maskable.png",
+      "src": "icon-192-maskable.png?v=1",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "https://soyelmadro.github.io/fintrack/icon-512.png",
+      "src": "icon-512.png?v=1",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://soyelmadro.github.io/fintrack/icon-512-maskable.png",
+      "src": "icon-512-maskable.png?v=1",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -36,6 +37,5 @@
   ],
   "categories": ["finance", "productivity"],
   "lang": "es",
-  "scope": "https://soyelmadro.github.io/fintrack/",
   "prefer_related_applications": false
 }
