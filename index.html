@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=1">
 </head>
 <body>
   <div class="app-container" id="app">
@@ -520,6 +520,17 @@
       </div>
     </div>
 
+    <!-- PWA Update Notification -->
+    <div class="update-banner" id="updateBanner" hidden>
+      <div class="update-banner-content">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        <span>Nueva versión disponible</span>
+      </div>
+      <button class="btn-update-reload" id="updateReloadBtn">Actualizar</button>
+    </div>
+
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -537,9 +548,36 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').then(registration => {
           console.log('SW registered:', registration.scope);
+
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (!newWorker) return;
+
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                const banner = document.getElementById('updateBanner');
+                const reloadBtn = document.getElementById('updateReloadBtn');
+                if (banner && reloadBtn) {
+                  banner.hidden = false;
+                  reloadBtn.addEventListener('click', () => {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                  });
+                }
+              }
+            });
+          });
         }).catch(error => {
           console.log('SW registration failed:', error);
         });
+      });
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
       });
     }
   </script>

@@ -1,122 +1,164 @@
-const CACHE_NAME = 'fintrack-v2';
-const EXTERNAL_CACHE_NAME = 'fintrack-external-v1';
+const ASSET_VERSION = '1';
+const CACHE_VERSION = 'v3';
+const STATIC_CACHE = `fintrack-static-${CACHE_VERSION}`;
+const EXTERNAL_CACHE = 'fintrack-external-v1';
+
+const STATIC_ASSETS = [
+  './',
+  './index.html',
+  './styles.css?v=' + ASSET_VERSION,
+  './app.js',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-192-maskable.png',
+  './icon-512-maskable.png'
+];
 
 const EXTERNAL_HOSTS = ['dolarapi.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
 function getBasePath() {
-  const pathname = new URL(self.registration.scope).pathname;
+  const scope = self.registration.scope;
+  const pathname = new URL(scope).pathname;
   return pathname.endsWith('/') ? pathname : `${pathname}/`;
 }
 
-function getUrlsToCache() {
-  const base = getBasePath();
-  return [
-    base,
-    `${base}index.html`,
-    `${base}styles.css`,
-    `${base}app.js`,
-    `${base}manifest.json`,
-    `${base}icon-192.png`,
-    `${base}icon-512.png`,
-    `${base}icon-192-maskable.png`,
-    `${base}icon-512-maskable.png`
-  ];
+function clearOldCaches() {
+  return caches.keys().then(keys =>
+    Promise.all(
+      keys
+        .filter(key => {
+          if (key === STATIC_CACHE || key === EXTERNAL_CACHE) return false;
+          if (key.startsWith('fintrack-static-')) return true;
+          if (key.startsWith('fintrack-external-')) return true;
+          return false;
+        })
+        .map(key => caches.delete(key))
+    )
+  );
 }
 
-// ── Install ──────────────────────────────────────────────────────────────────
-
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(getUrlsToCache()))
-      .then(() => self.skipWaiting()) // solo si el caché se completó OK
+    caches.open(STATIC_CACHE)
+      .then(cache => {
+        cache.addAll(STATIC_ASSETS).catch(err => {
+          console.warn('[SW] Some assets failed to cache:', err);
+        });
+        return cache;
+      })
+      .then(() => self.skipWaiting())
   );
 });
 
-// ── Activate ─────────────────────────────────────────────────────────────────
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
-self.addEventListener('activate', (event) => {
-  const validCaches = [CACHE_NAME, EXTERNAL_CACHE_NAME];
-
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) =>
-        Promise.all(
-          cacheNames
-            .filter((name) => !validCaches.includes(name))
-            .map((name) => caches.delete(name))
-        )
-      )
-      .then(() => self.clients.claim()) // después de limpiar, no antes
+    clearOldCaches()
+      .then(() => {
+        self.clients.claim();
+        return self.registration.navigationPreload?.enable();
+      })
   );
 });
 
-// ── Fetch ─────────────────────────────────────────────────────────────────────
-
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ignorar requests que no sean GET
   if (request.method !== 'GET') return;
 
-  const isExternal = EXTERNAL_HOSTS.some((host) => url.hostname.includes(host));
+  if (request.headers.get('Sec-Fetch-Dest') === 'service-worker') return;
+
+  const isExternal = EXTERNAL_HOSTS.some(host => url.hostname.includes(host));
 
   if (isExternal) {
-    // Estrategia Network-first para recursos externos
-    event.respondWith(networkFirst(request, EXTERNAL_CACHE_NAME));
+    event.respondWith(networkFirst(request, EXTERNAL_CACHE));
     return;
   }
 
-  // Estrategia Cache-first para assets estáticos propios
-  event.respondWith(cacheFirst(request));
+  if (request.destination === 'document') {
+    event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
+    return;
+  }
+
+  if (
+    request.destination === 'style' ||
+    request.destination === 'script' ||
+    request.destination === 'image' ||
+    request.destination === 'font'
+  ) {
+    event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
+    return;
+  }
+
+  event.respondWith(cacheFirst(request, STATIC_CACHE));
 });
 
-// ── Estrategias ───────────────────────────────────────────────────────────────
+async function staleWhileRevalidate(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
 
-async function cacheFirst(request) {
+  const networkPromise = fetch(request)
+    .then(response => {
+      if (response.ok && response.status === 200) {
+        cache.put(request, response.clone());
+      }
+      return response;
+    })
+    .catch(() => null);
+
+  if (cached) return cached;
+
+  const networkResponse = await networkPromise;
+  if (networkResponse) return networkResponse;
+
+  if (request.destination === 'document') {
+    const base = getBasePath();
+    return (
+      (await caches.match(`${base}index.html`)) ||
+      (await caches.match(base)) ||
+      new Response('Offline', { status: 503 })
+    );
+  }
+
+  return new Response('Recurso no disponible offline', { status: 503 });
+}
+
+async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
   if (cached) return cached;
 
   try {
-    const networkResponse = await fetch(request);
-
-    if (networkResponse.ok && networkResponse.type === 'basic') {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
+    const response = await fetch(request);
+    if (response.ok && response.status === 200) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, response.clone());
     }
-
-    return networkResponse;
+    return response;
   } catch {
-    // Fallback a index.html para navegación offline
-    if (request.destination === 'document') {
-      const base = getBasePath();
-      return (
-        (await caches.match(`${base}index.html`)) ||
-        (await caches.match(base))
-      );
-    }
     return new Response('Recurso no disponible', { status: 503 });
   }
 }
 
 async function networkFirst(request, cacheName) {
   try {
-    const networkResponse = await fetch(request);
-
-    if (networkResponse.ok) {
+    const response = await fetch(request);
+    if (response.ok) {
       const cache = await caches.open(cacheName);
-      cache.put(request, networkResponse.clone());
+      cache.put(request, response.clone());
     }
-
-    return networkResponse;
+    return response;
   } catch {
     const cached = await caches.match(request);
     if (cached) return cached;
-
-    // Error estructurado para que el cliente pueda manejarlo
     return new Response(
-      JSON.stringify({ error: 'Sin conexión y sin caché disponible' }),
+      JSON.stringify({ error: 'Sin conexión' }),
       { status: 503, headers: { 'Content-Type': 'application/json' } }
     );
   }
