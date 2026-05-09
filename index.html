@@ -520,16 +520,7 @@
       </div>
     </div>
 
-    <!-- PWA Update Notification -->
-    <div class="update-banner" id="updateBanner" hidden>
-      <div class="update-banner-content">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-        </svg>
-        <span>Nueva versión disponible</span>
-      </div>
-      <button class="btn-update-reload" id="updateReloadBtn">Actualizar</button>
-    </div>
+
 
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
@@ -548,38 +539,22 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').then(registration => {
           console.log('SW registered:', registration.scope);
-
-          let hasShownUpdateBanner = false;
-
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (!newWorker) return;
-
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller && !hasShownUpdateBanner) {
-                hasShownUpdateBanner = true;
-                const banner = document.getElementById('updateBanner');
-                const reloadBtn = document.getElementById('updateReloadBtn');
-                if (banner && reloadBtn) {
-                  banner.hidden = false;
-                  reloadBtn.addEventListener('click', () => {
-                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                    window.location.reload();
-                  });
-                }
-              }
-            });
-          });
+          
+          // Intentar actualizar el SW silenciosamente en cada carga
+          registration.update().catch(() => {});
         }).catch(error => {
           console.log('SW registration failed:', error);
         });
       });
 
+      // Recarga suave solo si hay un cambio de controlador y la página no se está recargando ya
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
           refreshing = true;
-          window.location.reload();
+          // Opcional: Podríamos recargar aquí (window.location.reload()), pero puede interrumpir al usuario.
+          // Como sw.js hace skipWaiting() automático, la próxima vez que el usuario abra la app 
+          // tendrá la versión más reciente. Mantenemos el update silencioso sin forzar reload.
         }
       });
     }
