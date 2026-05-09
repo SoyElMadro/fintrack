@@ -1,6 +1,17 @@
 (function() {
   'use strict';
 
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+  });
+
   const STORAGE_KEYS = {
     TRANSACTIONS: 'fintrack_transactions',
     SETTINGS: 'fintrack_settings'
@@ -269,6 +280,24 @@
       closeSidebar();
       openModal();
     });
+
+    // Install PWA button
+    const installBtn = document.getElementById('installAppBtn');
+    if (deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
+      installBtn.classList.add('show');
+    }
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const result = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installBtn.classList.remove('show');
+    });
+
+    // Hide install button if already in standalone mode
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      installBtn.classList.remove('show');
+    }
 
     // On resize: if going back to desktop, reset sidebar state
     window.addEventListener('resize', () => {
