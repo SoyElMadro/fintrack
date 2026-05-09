@@ -2014,8 +2014,9 @@ body {
   .sidebar {
     position: fixed;
     top: 0;
-    left: -380px;
-    width: 360px;
+    left: 0;
+    width: 340px;
+    max-width: 85vw;
     height: 100vh;
     overflow-y: auto;
     background: var(--surface);
@@ -2023,13 +2024,14 @@ body {
     box-shadow: var(--shadow-elevated);
     z-index: 250;
     padding: 80px 20px 24px;
-    transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     gap: 16px;
     flex-direction: column;
+    transform: translateX(-100%);
   }
 
   .sidebar.open {
-    left: 0;
+    transform: translateX(0);
   }
 
   /* Hide "Add Transaction" button in sidebar on tablet+ (shown as FAB) */
@@ -2459,8 +2461,8 @@ body {
 
   /* Sidebar mobile */
   .sidebar {
-    left: -400px;
-    width: 320px;
+    width: 300px;
+    max-width: 85vw;
     padding: 70px 16px 20px;
     gap: 14px;
   }
