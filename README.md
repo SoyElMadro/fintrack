@@ -1,4 +1,6 @@
-# Personal Finance Tracker - Specification
+# Personal Finance Tracker
+
+<img width="1920" height="1080" alt="fintrack" src="https://github.com/user-attachments/assets/0dc73c1d-1439-4ec7-bc63-1cdde9224deb" />
 
 ## Project Overview
 - **Project Name**: FinTrack - Personal Finance Manager
