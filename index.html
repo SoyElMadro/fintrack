@@ -139,39 +139,54 @@
       <section class="content">
         <!-- Dashboard -->
         <div class="dashboard">
-          <div class="stat-card balance">
-            <div class="stat-card-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="4" width="20" height="16" rx="2"/>
-                <path d="M12 10v4M10 12h4"/>
-              </svg>
-            </div>
-            <div class="stat-card-content">
-              <span class="stat-card-label">Balance Total</span>
-              <span class="stat-card-value" id="totalBalance">$0.00</span>
-            </div>
-          </div>
-          <div class="stat-card income">
-            <div class="stat-card-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-              </svg>
-            </div>
-            <div class="stat-card-content">
-              <span class="stat-card-label">Ingresos Totales</span>
-              <span class="stat-card-value" id="totalIncome">$0.00</span>
+          <div class="dashboard-header">
+            <h2>Resumen Financiero</h2>
+            <div class="period-selector">
+              <label for="periodSelect">Período:</label>
+              <select id="periodSelect">
+                <option value="1">1 mes</option>
+                <option value="3">3 meses</option>
+                <option value="6">6 meses</option>
+                <option value="12">1 año</option>
+                <option value="all">Siempre</option>
+              </select>
             </div>
           </div>
-          <div class="stat-card expense">
-            <div class="stat-card-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M16 8l-8 8M8 8l8 8"/>
-              </svg>
+          <div class="stat-cards">
+            <div class="stat-card balance">
+              <div class="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="M12 10v4M10 12h4"/>
+                </svg>
+              </div>
+              <div class="stat-card-content">
+                <span class="stat-card-label">Balance Total</span>
+                <span class="stat-card-value" id="totalBalance">$0.00</span>
+              </div>
             </div>
-            <div class="stat-card-content">
-              <span class="stat-card-label">Gastos Totales</span>
-              <span class="stat-card-value" id="totalExpenses">$0.00</span>
+            <div class="stat-card income">
+              <div class="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                </svg>
+              </div>
+              <div class="stat-card-content">
+                <span class="stat-card-label">Ingresos Totales</span>
+                <span class="stat-card-value" id="totalIncome">$0.00</span>
+              </div>
+            </div>
+            <div class="stat-card expense">
+              <div class="stat-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M16 8l-8 8M8 8l8 8"/>
+                </svg>
+              </div>
+              <div class="stat-card-content">
+                <span class="stat-card-label">Gastos Totales</span>
+                <span class="stat-card-value" id="totalExpenses">$0.00</span>
+              </div>
             </div>
           </div>
         </div>

@@ -98,10 +98,23 @@
     loadData();
     setupEventListeners();
     applyTheme();
+    setupPeriodSelector();
     renderAll();
-    // Fetch dolar MEP in background, then re-render wallets
     await fetchDolarMEP();
     renderWallets();
+  }
+
+  function setupPeriodSelector() {
+    const periodSelect = document.getElementById('periodSelect');
+    if (periodSelect) {
+      periodSelect.addEventListener('change', () => {
+        const period = periodSelect.value;
+        const stats = calculateStatsByPeriod(period);
+        document.getElementById('totalBalance').textContent = formatCurrency(stats.totalBalance);
+        document.getElementById('totalIncome').textContent = formatCurrency(stats.totalIncome);
+        document.getElementById('totalExpenses').textContent = formatCurrency(stats.totalExpenses);
+      });
+    }
   }
 
   async function fetchDolarMEP() {
@@ -182,6 +195,50 @@
 
   function getTodayString() {
     return new Date().toISOString().split('T')[0];
+  }
+
+  function getDateRangeForPeriod(periodValue) {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    const endDate = today.toISOString().split('T')[0];
+
+    let startDate;
+    if (periodValue === 'all') {
+      startDate = null;
+    } else {
+      const months = parseInt(periodValue, 10);
+      startDate = new Date(today.getFullYear(), today.getMonth() - months + 1, 1);
+      startDate.setHours(0, 0, 0, 0);
+      startDate = startDate.toISOString().split('T')[0];
+    }
+    return { startDate, endDate };
+  }
+
+  function filterTransactionsByPeriod(transactions, startDate, endDate) {
+    return transactions.filter(t => {
+      if (startDate && t.date < startDate) return false;
+      if (endDate && t.date > endDate) return false;
+      return true;
+    });
+  }
+
+  function calculateStatsByPeriod(periodValue) {
+    const { startDate, endDate } = getDateRangeForPeriod(periodValue);
+    const filteredTransactions = filterTransactionsByPeriod(state.transactions, startDate, endDate);
+
+    const stats = { totalBalance: 0, totalIncome: 0, totalExpenses: 0 };
+
+    filteredTransactions.forEach(t => {
+      if (t.category === 'Transferencia' || t.transferGroupId) return;
+      if (t.type === 'income') {
+        stats.totalIncome += t.amount;
+      } else {
+        stats.totalExpenses += t.amount;
+      }
+    });
+
+    stats.totalBalance = stats.totalIncome - stats.totalExpenses;
+    return stats;
   }
 
   function applyTheme() {
