@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
   <div class="app-container" id="app">
@@ -31,9 +31,15 @@
         <h1 class="app-title">FinTrack</h1>
       </div>
       <div class="header-right">
-        <button class="btn-icon" id="exportBtn" title="Exportar Datos">
+        <button class="btn-icon" id="exportBtn" title="Exportar a JSON">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+        </button>
+        <button class="btn-icon" id="exportCsvBtn" title="Exportar a CSV">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/>
           </svg>
         </button>
         <button class="btn-icon" id="importBtn" title="Importar Datos">
@@ -42,13 +48,19 @@
           </svg>
         </button>
         <input type="file" id="importFile" accept=".json" hidden>
-        <button class="btn-icon" id="darkModeToggle" title="Cambiar Modo Oscuro">
+        <button class="btn-icon" id="darkModeToggle" title="Cambiar Modo Oscuro (atajo: D)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sun-icon">
             <circle cx="12" cy="12" r="5"/>
             <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
           </svg>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="moon-icon">
             <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
+        <button class="btn-icon" id="shortcutsBtn" title="Atajos de Teclado (?)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/>
           </svg>
         </button>
         <button class="btn-menu btn-icon" id="menuBtn" title="Abrir menú" aria-label="Abrir menú lateral">
@@ -72,11 +84,12 @@
             <path d="M18 6L6 18M6 6l12 12"/>
           </svg>
         </button>
-        <button class="btn-primary add-transaction-btn" id="openModalBtn">
+        <button class="btn-primary add-transaction-btn" id="openModalBtn" title="Agregar Transacción (atajo: N)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 5v14M5 12h14"/>
           </svg>
           Agregar Transacción
+          <kbd class="btn-kbd">N</kbd>
         </button>
 
         <div class="budget-section">
@@ -127,6 +140,11 @@
           </div>
         </div>
 
+        <div class="top-categories" id="topCategoriesSection">
+          <h3>Top Categorías (Este Mes)</h3>
+          <div class="top-categories-list" id="topCategoriesList"></div>
+        </div>
+
         <button type="button" class="btn-install-app" id="installAppBtn" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -137,19 +155,68 @@
 
       <!-- Content Area -->
       <section class="content">
+        <!-- Page Navigation -->
+        <nav class="page-nav" id="pageNav">
+          <button class="page-nav-btn active" data-page="resumen">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            Resumen
+          </button>
+          <button class="page-nav-btn" data-page="gastos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
+            Gastos
+          </button>
+          <button class="page-nav-btn" data-page="analisis">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 17l6-6 4 4 8-8"/>
+              <path d="M14 7h7v7"/>
+            </svg>
+            Análisis
+          </button>
+          <button class="page-nav-btn" data-page="metas">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+            Metas
+          </button>
+          <button class="page-nav-btn" data-page="suscripciones">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/>
+            </svg>
+            Suscripciones
+          </button>
+        </nav>
+
+        <!-- Page: Resumen -->
+        <div class="page-content active" id="page-resumen">
         <!-- Dashboard -->
         <div class="dashboard">
           <div class="dashboard-header">
             <h2>Resumen Financiero</h2>
-            <div class="period-selector">
-              <label for="periodSelect">Período:</label>
-              <select id="periodSelect">
-                <option value="1">1 mes</option>
-                <option value="3">3 meses</option>
-                <option value="6">6 meses</option>
-                <option value="12">1 año</option>
-                <option value="all">Siempre</option>
-              </select>
+            <div class="dashboard-controls">
+              <div class="period-selector">
+                <label for="periodSelect">Período:</label>
+                <select id="periodSelect">
+                  <option value="1">1 mes</option>
+                  <option value="3">3 meses</option>
+                  <option value="6">6 meses</option>
+                  <option value="12">1 año</option>
+                  <option value="all">Siempre</option>
+                </select>
+              </div>
+              <div class="month-selector">
+                <label for="monthSelect">Mes específico:</label>
+                <input type="month" id="monthSelect">
+                <button class="btn-sm btn-clear-month" id="clearMonthBtn" style="display:none">×</button>
+              </div>
             </div>
           </div>
           <div class="stat-cards">
@@ -163,6 +230,10 @@
               <div class="stat-card-content">
                 <span class="stat-card-label">Balance Total</span>
                 <span class="stat-card-value" id="totalBalance">$0.00</span>
+                <div class="stat-card-meta">
+                  <span class="trend" id="balanceTrend"></span>
+                  <span class="savings-rate" id="savingsRate"></span>
+                </div>
               </div>
             </div>
             <div class="stat-card income">
@@ -174,7 +245,11 @@
               <div class="stat-card-content">
                 <span class="stat-card-label">Ingresos Totales</span>
                 <span class="stat-card-value" id="totalIncome">$0.00</span>
+                <div class="stat-card-meta">
+                  <span class="trend" id="incomeTrend"></span>
+                </div>
               </div>
+              <div class="sparkline" id="incomeSparkline" aria-hidden="true"></div>
             </div>
             <div class="stat-card expense">
               <div class="stat-card-icon">
@@ -186,7 +261,11 @@
               <div class="stat-card-content">
                 <span class="stat-card-label">Gastos Totales</span>
                 <span class="stat-card-value" id="totalExpenses">$0.00</span>
+                <div class="stat-card-meta">
+                  <span class="trend" id="expenseTrend"></span>
+                </div>
               </div>
+              <div class="sparkline" id="expenseSparkline" aria-hidden="true"></div>
             </div>
           </div>
         </div>
@@ -194,18 +273,147 @@
         <!-- Charts Section -->
         <div class="charts-section">
           <div class="chart-card">
-            <h3>Ingresos vs Gastos (Últimos 6 Meses)</h3>
+            <h3 id="barChartTitle">Ingresos vs Gastos (Últimos 6 Meses)</h3>
             <div class="chart-container" id="barChart"></div>
           </div>
           <div class="chart-card">
-            <h3>Gastos por Categoría (Este Mes)</h3>
+            <h3 id="pieChartTitle">Gastos por Categoría (Este Mes)</h3>
             <div class="chart-container" id="pieChart"></div>
           </div>
         </div>
 
+        <!-- Balance Evolution Chart -->
+        <div class="chart-card balance-evolution-card">
+          <div class="section-header" style="margin-bottom: 16px;">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -3px; margin-right: 6px; color: var(--primary);">
+                <path d="M3 17l6-6 4 4 8-8"/>
+                <path d="M14 7h7v7"/>
+              </svg>
+              Evolución del Balance
+            </h3>
+            <div class="balance-evolution-toggle">
+              <button class="evo-btn active" data-range="30">30d</button>
+              <button class="evo-btn" data-range="90">90d</button>
+              <button class="evo-btn" data-range="180">6m</button>
+              <button class="evo-btn" data-range="365">1 año</button>
+            </div>
+          </div>
+          <div class="chart-container balance-evolution-container" id="balanceEvolutionChart"></div>
+          <div class="evo-stats" id="evoStats"></div>
+        </div>
+
+        </div>
+        <!-- End Page: Resumen -->
+
+        <!-- Page: Suscripciones -->
+        <div class="page-content" id="page-suscripciones">
+        <!-- Subscriptions Section -->
+        <div class="subscriptions-section">
+          <div class="section-header">
+            <div>
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -3px; margin-right: 6px; color: var(--income);">
+                  <path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/>
+                </svg>
+                Suscripciones Recurrentes
+              </h3>
+              <p class="section-subtitle" id="subscriptionsSummary">Cargá tus suscripciones para no olvidarlas</p>
+            </div>
+            <button class="btn-primary btn-sm-icon" id="openSubscriptionModalBtn" title="Agregar suscripción">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Nueva Suscripción
+            </button>
+          </div>
+          <div class="subscriptions-list" id="subscriptionsList"></div>
+        </div>
+        </div>
+        <!-- End Page: Suscripciones -->
+
+        <!-- Page: Metas -->
+        <div class="page-content" id="page-metas">
+        <!-- Savings Goals Section -->
+        <div class="goals-section">
+          <div class="section-header">
+            <div>
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -3px; margin-right: 6px; color: var(--primary);">
+                  <circle cx="12" cy="12" r="10"/>
+                  <circle cx="12" cy="12" r="6"/>
+                  <circle cx="12" cy="12" r="2"/>
+                </svg>
+                Metas de Ahorro
+              </h3>
+              <p class="section-subtitle" id="goalsSummary">Definí tus objetivos y alcanzalos</p>
+            </div>
+            <button class="btn-primary btn-sm-icon" id="openGoalModalBtn" title="Agregar meta (atajo: G)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Nueva Meta
+            </button>
+          </div>
+          <div class="goals-list" id="goalsList"></div>
+        </div>
+        </div>
+        <!-- End Page: Metas -->
+
+        <!-- Page: Análisis -->
+        <div class="page-content" id="page-analisis">
+        <!-- Heatmap Section -->
+        <div class="heatmap-section">
+          <div class="section-header">
+            <div>
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -3px; margin-right: 6px; color: var(--expense);">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/>
+                  <rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="3" y="14" width="7" height="7" rx="1"/>
+                  <rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Mapa de Gastos
+              </h3>
+              <p class="section-subtitle">Últimas 12 semanas · Click para ver detalles</p>
+            </div>
+            <div class="heatmap-legend">
+              <span class="heatmap-legend-label">Menos</span>
+              <span class="heatmap-cell" data-level="0"></span>
+              <span class="heatmap-cell" data-level="1"></span>
+              <span class="heatmap-cell" data-level="2"></span>
+              <span class="heatmap-cell" data-level="3"></span>
+              <span class="heatmap-cell" data-level="4"></span>
+              <span class="heatmap-legend-label">Más</span>
+            </div>
+          </div>
+          <div class="heatmap-container" id="heatmapContainer"></div>
+        </div>
+        </div>
+        <!-- End Page: Análisis -->
+
+        <!-- Page: Gastos -->
+        <div class="page-content" id="page-gastos">
         <!-- Filters -->
         <div class="filters-section">
-          <h3>Transacciones</h3>
+          <div class="filters-header">
+            <h3>Transacciones</h3>
+            <div class="search-wrapper">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+              <input type="search" id="filterSearch" placeholder="Buscar transacciones...  ( / )" autocomplete="off" aria-label="Buscar transacciones">
+              <kbd class="search-kbd">/</kbd>
+            </div>
+          </div>
+          <div class="date-presets" id="datePresets">
+            <button class="preset-btn" data-preset="today">Hoy</button>
+            <button class="preset-btn" data-preset="week">Esta semana</button>
+            <button class="preset-btn" data-preset="month">Este mes</button>
+            <button class="preset-btn" data-preset="last-month">Mes anterior</button>
+            <button class="preset-btn" data-preset="year">Este año</button>
+          </div>
           <div class="filters">
             <div class="filter-group">
               <label for="filterStartDate">Desde</label>
@@ -229,6 +437,16 @@
                 <option value="all">Todas las Categorías</option>
               </select>
             </div>
+            <div class="filter-group">
+              <label for="filterSort">Ordenar por</label>
+              <select id="filterSort">
+                <option value="date-desc">Fecha (más reciente)</option>
+                <option value="date-asc">Fecha (más antigua)</option>
+                <option value="amount-desc">Monto (mayor)</option>
+                <option value="amount-asc">Monto (menor)</option>
+                <option value="category">Categoría (A-Z)</option>
+              </select>
+            </div>
             <button class="btn-secondary" id="clearFiltersBtn">Limpiar</button>
           </div>
         </div>
@@ -247,6 +465,8 @@
             </div>
           </div>
         </div>
+        </div>
+        <!-- End Page: Gastos -->
       </section>
     </main>
 
@@ -535,10 +755,247 @@
       </div>
     </div>
 
+    <!-- Subscription Modal -->
+    <div class="modal-overlay" id="subscriptionModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="subscriptionModalTitle">Nueva Suscripción</h2>
+          <button class="btn-icon modal-close" id="closeSubscriptionBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form id="subscriptionForm">
+          <input type="hidden" id="subscriptionEditId">
+          <div class="form-group">
+            <label for="subscriptionName">Nombre</label>
+            <input type="text" id="subscriptionName" maxlength="50" required placeholder="Ej: Netflix, Spotify, Alquiler">
+          </div>
+          <div class="form-group">
+            <label for="subscriptionAmount">Monto</label>
+            <input type="number" id="subscriptionAmount" step="0.01" min="0.01" required placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label for="subscriptionFrequency">Frecuencia</label>
+            <select id="subscriptionFrequency" required>
+              <option value="weekly">Semanal</option>
+              <option value="biweekly">Quincenal</option>
+              <option value="monthly" selected>Mensual</option>
+              <option value="yearly">Anual</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="subscriptionCategory">Categoría</label>
+            <select id="subscriptionCategory" required>
+              <option value="">Seleccionar categoría</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="subscriptionWallet">Billetera (opcional)</label>
+            <select id="subscriptionWallet">
+              <option value="">Sin billetera</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="subscriptionStartDate">Próximo / Primer vencimiento</label>
+            <input type="date" id="subscriptionStartDate" required>
+          </div>
+          <div class="form-group">
+            <label for="subscriptionNotes">Notas (opcional)</label>
+            <input type="text" id="subscriptionNotes" maxlength="100" placeholder="Ej: Plan familiar, compartido con...">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-danger" id="deleteSubscriptionBtn" style="display: none;">Eliminar</button>
+            <div style="flex: 1;"></div>
+            <button type="button" class="btn-secondary" id="cancelSubscriptionBtn">Cancelar</button>
+            <button type="submit" class="btn-primary" id="saveSubscriptionBtn">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Subscription Confirmation -->
+    <div class="modal-overlay" id="deleteSubscriptionModal">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <h2>Eliminar Suscripción</h2>
+        </div>
+        <div class="modal-body">
+          <p>¿Eliminar esta suscripción? No se borrarán las transacciones ya creadas.</p>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" id="cancelDeleteSubscriptionBtn">Cancelar</button>
+          <button class="btn-danger" id="confirmDeleteSubscriptionBtn">Eliminar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Goal Modal -->
+    <div class="modal-overlay" id="goalModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="goalModalTitle">Nueva Meta de Ahorro</h2>
+          <button class="btn-icon modal-close" id="closeGoalBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form id="goalForm">
+          <input type="hidden" id="goalEditId">
+          <div class="form-group">
+            <label for="goalName">Nombre de la meta</label>
+            <input type="text" id="goalName" maxlength="50" required placeholder="Ej: Auto, Vacaciones, Casa">
+          </div>
+          <div class="form-group">
+            <label for="goalIcon">Ícono (emoji)</label>
+            <input type="text" id="goalIcon" maxlength="2" placeholder="🎯" value="🎯">
+          </div>
+          <div class="form-group">
+            <label for="goalTarget">Monto objetivo</label>
+            <input type="number" id="goalTarget" step="0.01" min="1" required placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label for="goalCurrent">Monto actual (opcional)</label>
+            <input type="number" id="goalCurrent" step="0.01" min="0" placeholder="0.00" value="0">
+          </div>
+          <div class="form-group">
+            <label for="goalDeadline">Fecha objetivo (opcional)</label>
+            <input type="date" id="goalDeadline">
+          </div>
+          <div class="form-group">
+            <label for="goalColor">Color</label>
+            <div class="color-picker" id="goalColorPicker">
+              <button type="button" class="color-swatch active" data-color="#10B981" style="background: #10B981"></button>
+              <button type="button" class="color-swatch" data-color="#6366F1" style="background: #6366F1"></button>
+              <button type="button" class="color-swatch" data-color="#EF4444" style="background: #EF4444"></button>
+              <button type="button" class="color-swatch" data-color="#F59E0B" style="background: #F59E0B"></button>
+              <button type="button" class="color-swatch" data-color="#EC4899" style="background: #EC4899"></button>
+              <button type="button" class="color-swatch" data-color="#8B5CF6" style="background: #8B5CF6"></button>
+              <button type="button" class="color-swatch" data-color="#06B6D4" style="background: #06B6D4"></button>
+            </div>
+            <input type="hidden" id="goalColor" value="#10B981">
+          </div>
+          <div class="form-group">
+            <label for="goalNotes">Notas (opcional)</label>
+            <input type="text" id="goalNotes" maxlength="100" placeholder="Ej: Para el verano 2026">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-danger" id="deleteGoalBtn" style="display: none;">Eliminar</button>
+            <div style="flex: 1;"></div>
+            <button type="button" class="btn-secondary" id="cancelGoalBtn">Cancelar</button>
+            <button type="submit" class="btn-primary" id="saveGoalBtn">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Contribute to Goal Modal -->
+    <div class="modal-overlay" id="contributeGoalModal">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <h2>Aportar a la Meta</h2>
+          <button class="btn-icon modal-close" id="closeContributeBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form id="contributeGoalForm">
+          <input type="hidden" id="contributeGoalId">
+          <div class="modal-body" style="padding-bottom: 0;">
+            <div class="contribute-goal-info" id="contributeGoalInfo"></div>
+          </div>
+          <div class="form-group" style="padding: 0 24px;">
+            <label for="contributeAmount">Monto a aportar</label>
+            <div class="currency-input-wrapper">
+              <span class="currency-symbol">$</span>
+              <input type="number" id="contributeAmount" step="0.01" min="0.01" required placeholder="0.00" class="input-lg">
+            </div>
+          </div>
+          <div class="form-group" style="padding: 0 24px;">
+            <label class="checkbox-label">
+              <input type="checkbox" id="contributeAsExpense">
+              <span>Registrar también como gasto (categoría Ahorro)</span>
+            </label>
+          </div>
+          <div class="form-group" id="contributeWalletGroup" style="padding: 0 24px; display: none;">
+            <label for="contributeWallet">Billetera del gasto</label>
+            <select id="contributeWallet"></select>
+          </div>
+          <div class="form-actions" style="padding: 24px;">
+            <button type="button" class="btn-secondary" id="cancelContributeBtn">Cancelar</button>
+            <button type="submit" class="btn-primary">Aportar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Goal Confirmation -->
+    <div class="modal-overlay" id="deleteGoalModal">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <h2>Eliminar Meta</h2>
+        </div>
+        <div class="modal-body">
+          <p>¿Eliminar esta meta de ahorro? El progreso se perderá.</p>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" id="cancelDeleteGoalBtn">Cancelar</button>
+          <button class="btn-danger" id="confirmDeleteGoalBtn">Eliminar</button>
+        </div>
+      </div>
+    </div>
+
 
 
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal-overlay" id="shortcutsModal">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <h2>Atajos de Teclado</h2>
+          <button class="btn-icon modal-close" id="closeShortcutsBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body shortcuts-body">
+          <div class="shortcut-row">
+            <span class="shortcut-desc">Nueva transacción</span>
+            <kbd class="shortcut-key">N</kbd>
+          </div>
+          <div class="shortcut-row">
+            <span class="shortcut-desc">Transferir entre billeteras</span>
+            <kbd class="shortcut-key">T</kbd>
+          </div>
+          <div class="shortcut-row">
+            <span class="shortcut-desc">Nueva meta de ahorro</span>
+            <kbd class="shortcut-key">G</kbd>
+          </div>
+          <div class="shortcut-row">
+            <span class="shortcut-desc">Buscar</span>
+            <kbd class="shortcut-key">/</kbd>
+          </div>
+          <div class="shortcut-row">
+            <span class="shortcut-desc">Modo oscuro</span>
+            <kbd class="shortcut-key">D</kbd>
+          </div>
+          <div class="shortcut-row">
+            <span class="shortcut-desc">Ver atajos</span>
+            <kbd class="shortcut-key">?</kbd>
+          </div>
+          <div class="shortcut-row">
+            <span class="shortcut-desc">Cerrar modal</span>
+            <kbd class="shortcut-key">Esc</kbd>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Floating Action Button (mobile) -->
     <button class="fab-add" id="fabAddBtn" aria-label="Agregar transacción">

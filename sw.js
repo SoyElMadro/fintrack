@@ -1,5 +1,5 @@
-const ASSET_VERSION = '1';
-const CACHE_VERSION = 'v3';
+const ASSET_VERSION = '4';
+const CACHE_VERSION = 'v6';
 const STATIC_CACHE = `fintrack-static-${CACHE_VERSION}`;
 const EXTERNAL_CACHE = 'fintrack-external-v1';
 
